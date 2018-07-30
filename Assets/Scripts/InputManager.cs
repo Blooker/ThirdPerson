@@ -16,6 +16,8 @@ public class InputManager : MonoBehaviour {
 
     [SerializeField] float rightStickSensitivity;
 
+    bool isRunningAnalogue = false;
+
     bool playerIndexSet = false;
     #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 
@@ -58,10 +60,16 @@ public class InputManager : MonoBehaviour {
         Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left);
         Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right);
 
+        // Clicking the left stick toggles running
+        if (OnXInputButtonDown(prevState.Buttons.LeftStick, state.Buttons.LeftStick)) {
+            isRunningAnalogue = !isRunningAnalogue;
+        }
+
+        // If left stick movement is being picked up
         if (leftStick != Vector2.zero) {
-            playerController.MoveAnalogue(leftStick.x, leftStick.y);
+            playerController.MoveAnalogue(leftStick.x, leftStick.y, isRunningAnalogue);
         } else {
-            playerController.MoveKeyboard(horiz, vert, Input.GetKey(KeyCode.LeftShift));
+            playerController.MoveKeyboard(horiz, vert, Input.GetKey(KeyCode.LeftShift), Input.GetKey(KeyCode.LeftControl));
         }
 
         if (rightStick != Vector2.zero) {
@@ -89,6 +97,14 @@ public class InputManager : MonoBehaviour {
 #endif
 
 
+    }
+
+    bool OnXInputButtonDown(ButtonState prevState, ButtonState state) {
+        if (prevState == ButtonState.Released && state == ButtonState.Pressed) {
+            return true;
+        }
+
+        return false;
     }
 
     float KeyInputHold (KeyCode posKey, KeyCode negKey) {

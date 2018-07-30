@@ -5,10 +5,16 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
     [Header("Speed")]
-    [SerializeField] float sneakSpeed = 1;
-    [SerializeField] float walkSpeed = 2;
+    [SerializeField] float minSpeed = 1;
+    [SerializeField] float sneakSpeed = 2;
+    [SerializeField] float walkSpeed = 4;
     [SerializeField] float runSpeed = 6;
-    [SerializeField] float accelTime = 0.1f, decelTime = 0.1f;
+
+    [Header("Acceleration")]
+    [SerializeField] float accelTime = 0.1f;
+    [SerializeField] float decelTime = 0.1f;
+    [SerializeField] float runAccelTime = 0.3f;
+    [SerializeField] float runDecelTime = 0.1f;
 
     [Header("Other")]
     [SerializeField] Camera playerCam;
@@ -43,24 +49,45 @@ public class PlayerController : MonoBehaviour {
         if (velocity.magnitude > targetVel.magnitude) {
             smoothTime = decelTime;
         } else {
-            smoothTime = accelTime;
+            if (currentSpeed == runSpeed) {
+                smoothTime = runAccelTime;
+            } else {
+                smoothTime = accelTime;
+            }
         }
 
         velocity = Vector3.SmoothDamp(velocity, moveDir * currentSpeed, ref currentVelocity, smoothTime);
+
+        if (velocity != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(velocity, Vector3.up);
+
     }
 
     // Run this in update
-    public void MoveKeyboard(float horiz, float vert, bool isRunning) {
-        float speed = isRunning ? runSpeed : walkSpeed;
+    public void MoveKeyboard(float horiz, float vert, bool isRunning, bool isSneaking) {
+        float speed;
+        if (isRunning) {
+            speed = runSpeed;
+        } else if (isSneaking) {
+            speed = sneakSpeed;
+        } else {
+            speed = walkSpeed;
+        }
+
         Move(horiz, vert, speed);
     }
 
-    public void MoveAnalogue (float horiz, float vert) {
-        // Map and clamp creates deadzones where the character is sneaking and running at a constant speed
-        float mag = ExtensionMethods.Map(new Vector2(horiz, vert).magnitude, 0, 1, -0.1f, 1.1f);
+    public void MoveAnalogue (float horiz, float vert, bool isRunning) {
+        float speed;
+        if (isRunning) {
+            speed = runSpeed;
+        } else {
+            // Map and clamp creates deadzones where the character is sneaking and running at a constant speed
+            float mag = ExtensionMethods.Map(new Vector2(horiz, vert).magnitude, 0, 1, -0.1f, 1.1f);
 
-        float speed = mag * walkSpeed;
-        speed = Mathf.Clamp(speed, sneakSpeed, walkSpeed);
+            speed = mag * walkSpeed;
+            speed = Mathf.Clamp(speed, minSpeed, walkSpeed);
+        }
 
         Move(horiz, vert, speed);
     }
