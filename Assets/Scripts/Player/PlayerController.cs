@@ -8,11 +8,14 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] float sneakSpeed = 1;
     [SerializeField] float walkSpeed = 2;
     [SerializeField] float runSpeed = 6;
+    [SerializeField] float accelTime = 0.1f, decelTime = 0.1f;
 
     [Header("Other")]
     [SerializeField] Camera playerCam;
 
-    private Vector3 moveDir;
+    private bool isMoving = false;
+
+    private Vector3 moveDir, velocity, currentVelocity;
     private float currentSpeed = 0;
 
     private CharacterController charController;
@@ -22,7 +25,28 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
-        charController.Move(moveDir * currentSpeed * Time.deltaTime);
+        //if (isMoving && velocity.magnitude < currentSpeed) {
+        //    velocity += moveDir;
+        //} else if (velocity.magnitude > currentSpeed) {
+            
+        //}
+
+        
+
+        //charController.Move(moveDir * currentSpeed * Time.deltaTime);
+        charController.Move(velocity * Time.deltaTime);
+    }
+
+    private void LateUpdate() {
+        float smoothTime;
+        Vector3 targetVel = moveDir * currentSpeed;
+        if (velocity.magnitude > targetVel.magnitude) {
+            smoothTime = decelTime;
+        } else {
+            smoothTime = accelTime;
+        }
+
+        velocity = Vector3.SmoothDamp(velocity, moveDir * currentSpeed, ref currentVelocity, smoothTime);
     }
 
     // Run this in update
@@ -44,7 +68,8 @@ public class PlayerController : MonoBehaviour {
     private void Move (float horiz, float vert, float speed) {
         Vector3 input = new Vector3(horiz, 0, vert).normalized;
 
-        if (input != Vector3.zero) {
+        isMoving = input != Vector3.zero;
+        if (isMoving) {
             //transform.eulerAngles = Vector3.up * Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg;
             moveDir = Quaternion.Euler(0, playerCam.transform.rotation.eulerAngles.y, 0) * input;
             //transform.forward = moveDir;

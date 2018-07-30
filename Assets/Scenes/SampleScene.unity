@@ -311,7 +311,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sneakSpeed: 1.5
   walkSpeed: 6
-  runSpeed: 15
+  runSpeed: 10
+  accelTime: 0.085
+  decelTime: 0.025
   playerCam: {fileID: 282840813}
 --- !u!23 &84248887
 MeshRenderer:
