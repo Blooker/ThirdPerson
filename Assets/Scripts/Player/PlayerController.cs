@@ -16,13 +16,21 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] float runAccelTime = 0.3f;
     [SerializeField] float runDecelTime = 0.1f;
 
+    [Header("Run Cancel")]
+    [SerializeField] float runAngleCheckTime = 0.2f;
+    [SerializeField] float runAngleCancelRange = 60;
+
     [Header("Other")]
     [SerializeField] Camera playerCam;
 
     private bool isMoving = false;
+    private bool runCancel = false;
 
     private Vector3 moveDir, velocity, currentVelocity;
     private float currentSpeed = 0;
+
+    private float runAngleTimer, maxRunAngle;
+    private Vector3 initRunDir;
 
     private CharacterController charController;
 
@@ -31,15 +39,25 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
-        //if (isMoving && velocity.magnitude < currentSpeed) {
-        //    velocity += moveDir;
-        //} else if (velocity.magnitude > currentSpeed) {
-            
-        //}
+        if (currentSpeed == runSpeed && !runCancel) {
+            float thisRunAngle = Vector3.Angle(initRunDir, moveDir);
+            if (thisRunAngle > maxRunAngle)
+                maxRunAngle = thisRunAngle;
 
-        
+            if (runAngleTimer < runAngleCheckTime) {
+                runAngleTimer += Time.deltaTime;
+            }
+            else {
+                if (maxRunAngle > 180 - (runAngleCancelRange / 2f)) {
+                    runCancel = true;
+                }
 
-        //charController.Move(moveDir * currentSpeed * Time.deltaTime);
+                runAngleTimer = 0;
+                maxRunAngle = 0;
+                initRunDir = moveDir;
+            }
+        }
+
         charController.Move(velocity * Time.deltaTime);
     }
 
@@ -77,7 +95,7 @@ public class PlayerController : MonoBehaviour {
         Move(horiz, vert, speed);
     }
 
-    public void MoveAnalogue (float horiz, float vert, bool isRunning) {
+    public void MoveAnalogue (float horiz, float vert, bool isRunning, ref bool _runCancel) {
         float speed;
         if (isRunning) {
             speed = runSpeed;
@@ -90,6 +108,8 @@ public class PlayerController : MonoBehaviour {
         }
 
         Move(horiz, vert, speed);
+
+        _runCancel = runCancel;
     }
 
     private void Move (float horiz, float vert, float speed) {
@@ -101,7 +121,18 @@ public class PlayerController : MonoBehaviour {
             moveDir = Quaternion.Euler(0, playerCam.transform.rotation.eulerAngles.y, 0) * input;
             //transform.forward = moveDir;
 
-            currentSpeed = speed;
+            if (speed != runSpeed) {
+                runCancel = false;
+                initRunDir = moveDir;
+            }
+
+            if (runCancel && speed == runSpeed) {
+                currentSpeed = walkSpeed;
+            }
+            else {
+                currentSpeed = speed;
+            }
+
         } else {
             currentSpeed = 0;
         }

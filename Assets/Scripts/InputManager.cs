@@ -14,9 +14,12 @@ public class InputManager : MonoBehaviour {
     [Range(0, 1)]
     [SerializeField] float stickDeadzone;
 
+    [SerializeField] float leftStickCheckTime = 0.2f;
     [SerializeField] float rightStickSensitivity;
 
     bool isRunningAnalogue = false;
+    bool leftStickCheck = false;
+    float leftStickCheckTimer = 0;
 
     bool playerIndexSet = false;
     #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
@@ -60,14 +63,35 @@ public class InputManager : MonoBehaviour {
         Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left);
         Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right);
 
-        // Clicking the left stick toggles running
-        if (OnXInputButtonDown(prevState.Buttons.LeftStick, state.Buttons.LeftStick)) {
-            isRunningAnalogue = !isRunningAnalogue;
+        if (isRunningAnalogue) {
+            if (leftStickCheckTimer < leftStickCheckTime) {
+                leftStickCheckTimer += Time.deltaTime;
+            }
+            else {
+                if (!leftStickCheck)
+                    isRunningAnalogue = false;
+
+                leftStickCheck = false;
+                leftStickCheckTimer = 0;
+            }
         }
 
         // If left stick movement is being picked up
         if (leftStick != Vector2.zero) {
-            playerController.MoveAnalogue(leftStick.x, leftStick.y, isRunningAnalogue);
+            // Clicking the left stick toggles running
+            if (OnXInputButtonDown(prevState.Buttons.LeftStick, state.Buttons.LeftStick)) {
+                isRunningAnalogue = !isRunningAnalogue;
+            }
+
+            bool runCancel = false;
+            playerController.MoveAnalogue(leftStick.x, leftStick.y, isRunningAnalogue, ref runCancel);
+
+            if (runCancel) {
+                isRunningAnalogue = false;
+                leftStickCheck = false;
+                leftStickCheckTimer = 0;
+            }
+            leftStickCheck = true;
         } else {
             playerController.MoveKeyboard(horiz, vert, Input.GetKey(KeyCode.LeftShift), Input.GetKey(KeyCode.LeftControl));
         }

@@ -307,13 +307,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86050db33350cf64da722cb8e027863e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  minSpeed: 1
   sneakSpeed: 2
-  walkSpeed: 6
+  walkSpeed: 6.5
   runSpeed: 10
   accelTime: 0.085
   decelTime: 0.025
   runAccelTime: 0.1
   runDecelTime: 0.1
+  runAngleCheckTime: 0.15
+  runAngleCancelRange: 100
   playerCam: {fileID: 282840813}
 --- !u!4 &84248889
 Transform:
@@ -2003,10 +2006,10 @@ GameObject:
   - component: {fileID: 282840814}
   - component: {fileID: 282840813}
   - component: {fileID: 282840811}
+  - component: {fileID: 282840817}
   - component: {fileID: 282840815}
   - component: {fileID: 282840812}
   - component: {fileID: 282840816}
-  - component: {fileID: 282840817}
   m_Layer: 8
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2055,7 +2058,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 60
+  field of view: 70
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -2151,7 +2154,7 @@ Animator:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 282840810}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 0}
   m_CullingMode: 0
@@ -2174,7 +2177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 84248889}
-  dstFromTarget: 10
+  dstFromTarget: 8
   pitchMinMax: {x: -40, y: 85}
 --- !u!43 &303026051
 Mesh:
@@ -2380,7 +2383,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d4ee8586fdb7eee419470ce18f925ccb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6391,6 +6394,7 @@ MonoBehaviour:
   playerController: {fileID: 84248885}
   playerCam: {fileID: 282840817}
   stickDeadzone: 0.075
+  leftStickCheckTime: 0.1
   rightStickSensitivity: 0.5
 --- !u!1 &1362949992
 GameObject:
